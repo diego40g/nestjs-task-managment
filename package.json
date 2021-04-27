@@ -9,6 +9,7 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "nodemon": "nodemon",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -31,8 +32,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
-    "typeorm": "^0.2.30",
-    "uuid": "^8.3.2"
+    "typeorm": "^0.2.30"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.1",

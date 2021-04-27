@@ -1,13 +1,21 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Task, TaskStatus } from "./task.model";
-import { v1 as uuid } from "uuid";
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
+import { TaskRespository } from "./task.repository";
+import { Task } from "./task.entity";
+import { stat } from 'fs';
+import { TaskStatus } from './task-status.enum';
 
 @Injectable()
 export class TasksService {
-    private tasks:Task[] = [];
+    constructor(
+        @InjectRepository(TaskRespository)
+        private taskRepository: TaskRespository,
+    ) {}
 
+    /* no database typeorm
+    private tasks:Task[] = [];
     getAllTasks(): Task[]{
         return this.tasks;
     }
@@ -25,11 +33,11 @@ export class TasksService {
             );
         }
         return tasks;
-    }
+    }*/
 
-    getTaskById(id:string):Task{
-        const found = this.tasks.find(task => task.id===id)
-
+    async getTaskById(id:number): Promise<Task>{
+        const found = await this.taskRepository.findOne(id);
+        
         if(!found){
             throw new NotFoundException(`Task with ID "${id}" not found`);
         }
@@ -37,6 +45,17 @@ export class TasksService {
         return found;
     }
 
+    async createTask(createTaskDto: CreateTaskDto) {
+        const { title, description} = createTaskDto;
+        const task = new Task();
+        task.title = title;
+        task.description = description;
+        task.status = TaskStatus.OPEN;
+        await task.save();
+        return task;
+    }
+
+    /*
     deleteTask(id:string):void{
         const found = this.getTaskById(id);
         this.tasks = this.tasks.filter(task => task.id!== found.id);
@@ -47,7 +66,17 @@ export class TasksService {
         task.status = status;
         return task;
     }
-
+    createTask(creatTaskDto: CreateTaskDto):Task{
+        const {title, description} = creatTaskDto;
+        const task:Task={
+            id:uuid(),
+            title,
+            description,
+            status: TaskStatus.OPEN,
+        };
+        this.tasks.push(task);
+        return task;
+    }*/
     /* no DTO
     createTask(title: string, description: string): Task{
         const task: Task ={
@@ -60,16 +89,6 @@ export class TasksService {
         this.tasks.push(task);
         return task;
     }*/
-    createTask(creatTaskDto: CreateTaskDto):Task{
-        const {title, description} = creatTaskDto;
-        const task:Task={
-            id:uuid(),
-            title,
-            description,
-            status: TaskStatus.OPEN,
-        };
-        this.tasks.push(task);
-        return task;
-    }
+
 
 }

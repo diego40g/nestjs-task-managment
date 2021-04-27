@@ -1,14 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Patch, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Patch, Query, UsePipes, ValidationPipe, ParseIntPipe } from '@nestjs/common';
 import { TasksService } from './tasks.service';
-import { Task, TaskStatus } from "./task.model";
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetTasksFilterDto } from './dto/get-tasks-filter.dto';
 import { TaskStatusValidationPipe } from "./pipes/task-status-validation.pipes";
+import { Task } from './task.entity'
 
 @Controller('tasks')
 export class TasksController {
     constructor(private tasksService: TasksService){}
 
+    /*  NO DATABASE TYPEORM
     @Get()
     getTasks(@Query(ValidationPipe) filterDto: GetTasksFilterDto): Task[]{
         if(Object.keys(filterDto).length){
@@ -16,13 +17,20 @@ export class TasksController {
         }else{
             return this.tasksService.getAllTasks();
         }
-    }
+    }*/
 
     @Get('/:id')
-    getTaskById(@Param('id') id:string):Task{
+    getTaskById(@Param('id', ParseIntPipe) id:number):Promise<Task>{
         return this.tasksService.getTaskById(id);
     }
 
+    @Post()
+    @UsePipes(ValidationPipe)
+    createTask(@Body() createTaskDto: CreateTaskDto):Promise<Task> {
+        return this.tasksService.createTask(createTaskDto);
+    }
+
+    /*
     @Delete ('/:id')
     deleteTask(@Param('id') id:string):void{
         this.tasksService.deleteTask(id);
@@ -36,6 +44,11 @@ export class TasksController {
         return this.tasksService.updateTaskStatus(id,status);
     }
 
+    @Post()
+    @UsePipes(ValidationPipe)
+    createTask(@Body() createTaskDto:CreateTaskDto):Task{
+        return this.tasksService.createTask(createTaskDto);
+    }*/
     /*no DTO
     @Post()
     createTask(
@@ -44,10 +57,6 @@ export class TasksController {
     ): Task{
         return this.tasksService.createTask(title, description);
     }*/
-    @Post()
-    @UsePipes(ValidationPipe)
-    createTask(@Body() createTaskDto:CreateTaskDto):Task{
-        return this.tasksService.createTask(createTaskDto);
-    }
+    
 
 }
