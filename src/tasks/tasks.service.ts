@@ -14,6 +14,10 @@ export class TasksService {
         private taskRepository: TaskRespository,
     ) {}
 
+    async getTasks(filterDto: GetTasksFilterDto):Promise<Task[]>{
+        return this.taskRepository.getTasks(filterDto);
+    }
+
     /* no database typeorm
     private tasks:Task[] = [];
     getAllTasks(): Task[]{
@@ -46,49 +50,24 @@ export class TasksService {
     }
 
     async createTask(createTaskDto: CreateTaskDto) {
-        const { title, description} = createTaskDto;
-        const task = new Task();
-        task.title = title;
-        task.description = description;
-        task.status = TaskStatus.OPEN;
+        return this.taskRepository.createTask(createTaskDto);
+    }
+
+    async deleteTask(id: number):Promise<void>{
+        const result = await this.taskRepository.delete(id);
+        console.log(result);
+        //affected: 0 --> no encontro
+        //affected: 1 --> si encontro y elimino
+        if(result.affected === 0){
+            throw new NotFoundException(`Task with ID "${id}" not found`);
+        }
+    }
+
+    async updateTaskStatus(id:number, status:TaskStatus): Promise<Task>{
+        const task = await this.getTaskById(id);
+        task.status = status;
         await task.save();
         return task;
     }
-
-    /*
-    deleteTask(id:string):void{
-        const found = this.getTaskById(id);
-        this.tasks = this.tasks.filter(task => task.id!== found.id);
-    }
-
-    updateTaskStatus(id:string, status: TaskStatus){
-        const task = this.getTaskById(id);
-        task.status = status;
-        return task;
-    }
-    createTask(creatTaskDto: CreateTaskDto):Task{
-        const {title, description} = creatTaskDto;
-        const task:Task={
-            id:uuid(),
-            title,
-            description,
-            status: TaskStatus.OPEN,
-        };
-        this.tasks.push(task);
-        return task;
-    }*/
-    /* no DTO
-    createTask(title: string, description: string): Task{
-        const task: Task ={
-            id: uuid(),
-            title,
-            description,
-            status: TaskStatus.OPEN
-        };
-
-        this.tasks.push(task);
-        return task;
-    }*/
-
-
+    
 }
